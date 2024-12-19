@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clock In/Out</title>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 </head>
@@ -12,10 +11,11 @@
     <h1>Employee Clock In/Out</h1>
     <button id="clockInBtn">Clock In</button>
     <button id="clockOutBtn">Clock Out</button>
+    <button id="calculateHoursBtn">Calculate Total Hours</button>
+    <p id="totalHours">Total Hours Worked: 0</p>
 
     <script type="module">
-        // Firebase configuration (replace with your actual config values)
-        const firebaseConfig = {
+		const firebaseConfig = {
 			apiKey: "AIzaSyDoy9zU6F4JAcsohNpvHT5LFoVsPtEP0FY",
 			authDomain: "clock-in-and-out-script.firebaseapp.com",
 			databaseURL: "https://clock-in-and-out-script-default-rtdb.firebaseio.com",
@@ -26,11 +26,9 @@
 			measurementId: "G-SGVM94JHTT"
 		};
 
-        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -42,6 +40,9 @@
         document.getElementById('clockOutBtn').addEventListener('click', function() {
             logTime('clockOut');
         });
+
+        // Event listener for calculating total hours
+        document.getElementById('calculateHoursBtn').addEventListener('click', calculateTotalHours);
 
         // Function to log time to Firestore
         async function logTime(status) {
@@ -58,6 +59,35 @@
             } catch (e) {
                 console.error("Error adding document: ", e);
             }
+        }
+
+        // Function to calculate total hours worked
+        async function calculateTotalHours() {
+            const q = query(collection(db, "clockLogs"));
+            const querySnapshot = await getDocs(q);
+
+            let totalMilliseconds = 0;
+            let clockInTime = null;
+
+            querySnapshot.forEach((doc) => {
+                const log = doc.data();
+                const timestamp = log.timestamp.toDate();
+                
+                // Check if it's a clock-in or clock-out log
+                if (log.status === 'clockIn') {
+                    clockInTime = timestamp;
+                } else if (log.status === 'clockOut' && clockInTime) {
+                    // Calculate time worked for each pair of clock-in and clock-out
+                    const clockOutTime = timestamp;
+                    const timeWorked = clockOutTime - clockInTime;
+                    totalMilliseconds += timeWorked;
+                    clockInTime = null; // Reset clockInTime for the next pair
+                }
+            });
+
+            // Convert total milliseconds to hours
+            const totalHours = totalMilliseconds / (1000 * 60 * 60);
+            document.getElementById('totalHours').innerText = `Total Hours Worked: ${totalHours.toFixed(2)} hours`;
         }
     </script>
 </body>
