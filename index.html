@@ -3,63 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Clock</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            display: flex;
-            justify-content: center;
-            gap: 50px;
-            margin-top: 50px;
-        }
-        .section {
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            padding: 20px;
-            width: 200px;
-        }
-        .section h2 {
-            margin-top: 0;
-        }
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        button {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
+    <title>Clock In/Out</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 </head>
 <body>
-    <h1>Employee Clock</h1>
-    <div class="container">
-        <div class="section">
-            <h2>Training</h2>
-            <div class="button-group">
-                <button>Clock In</button>
-                <button>Clock Out</button>
-            </div>
-        </div>
-        <div class="section">
-            <h2>Work</h2>
-            <div class="button-group">
-                <button>Clock In</button>
-                <button>Clock Out</button>
-            </div>
-        </div>
-    </div>
+    <h1>Employee Clock In/Out</h1>
+    <button id="clockInBtn">Clock In</button>
+    <button id="clockOutBtn">Clock Out</button>
+
+    <script>
+        // Firebase configuration (replace these with your Firebase project settings)
+        const firebaseConfig = {
+			apiKey: "AIzaSyDoy9zU6F4JAcsohNpvHT5LFoVsPtEP0FY",
+			authDomain: "clock-in-and-out-script.firebaseapp.com",
+			projectId: "clock-in-and-out-script",
+			storageBucket: "clock-in-and-out-script.firebasestorage.app",
+			messagingSenderId: "170438669721",
+			appId: "1:170438669721:web:9d5729ac491a9b9fde4f08",
+			measurementId: "G-SGVM94JHTT"
+};
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+
+        // Event listeners for clock-in and clock-out buttons
+        document.getElementById('clockInBtn').addEventListener('click', function() {
+            logTime('clockIn');
+        });
+
+        document.getElementById('clockOutBtn').addEventListener('click', function() {
+            logTime('clockOut');
+        });
+
+        // Function to log the time to Firestore
+        function logTime(status) {
+            const currentTime = new Date().toLocaleString();
+            const data = {
+                time: currentTime,
+                status: status,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // Save the data to Firestore
+            db.collection("clockLogs").add(data)
+                .then((docRef) => {
+                    console.log("Document written with ID: ", docRef.id);
+                })
+                .catch((error) => {
+                    console.error("Error adding document: ", error);
+                });
+        }
+    </script>
 </body>
 </html>
