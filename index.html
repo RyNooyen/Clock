@@ -14,7 +14,7 @@
     <button id="clockOutBtn">Clock Out</button>
 
     <script type="module">
-        // Firebase configuration (replace these with your Firebase project settings)
+        // Firebase configuration (replace with your actual config values)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -24,10 +24,11 @@
             appId: "YOUR_APP_ID"
         };
 
-        // Initialize Firebase
+        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -40,7 +41,7 @@
             logTime('clockOut');
         });
 
-        // Function to log the time to Firestore
+        // Function to log time to Firestore
         async function logTime(status) {
             const currentTime = new Date().toLocaleString();
             const data = {
@@ -50,7 +51,6 @@
             };
 
             try {
-                // Save the data to Firestore
                 const docRef = await addDoc(collection(db, "clockLogs"), data);
                 console.log("Document written with ID: ", docRef.id);
             } catch (e) {
